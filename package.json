@@ -1,0 +1,10 @@
+{
+  "name": "bootcamp-app",
+  "version": "1.0.0",
+  "scripts": { "start": "node app.js" },
+  "dependencies": {
+    "express": "4.17.1",
+    "lodash": "4.17.15",
+    "sqlite3": "5.1.7"
+  }
+}
