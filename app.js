@@ -14,9 +14,15 @@ db.serialize(() => {
   db.run("INSERT INTO users VALUES (2, 'kofi', 'kofi@example.com')");
 });
 app.get('/user', (req, res) => {
-  const sql = "SELECT * FROM users WHERE name = '" + req.query.name + "'";
-  db.all(sql, (err, rows) => {
-    if (err) return res.status(500).send(err.stack);
+  const name = String(req.query.name || '');
+  if (!/^[a-z]{1,20}$/i.test(name)) {
+    return res.status(400).json({ error: 'Invalid name' });
+  }
+  db.all('SELECT * FROM users WHERE name = ?', [name], (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Something went wrong' });
+    }
     res.json(rows);
   });
 });
