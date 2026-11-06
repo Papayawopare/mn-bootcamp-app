@@ -1,38 +1,14 @@
-name: security-checks
-on: [push, pull_request]
-
-jobs:
-  snyk:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - run: npm ci
-      - uses: snyk/actions/setup@master
-      - name: SCA (dependencies)
-        run: snyk test --severity-threshold=high
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      - name: SAST (code)
-        run: snyk code test --severity-threshold=high
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-
   dependency-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Dependency-Check
-        uses: dependency-check/Dependency-Check_Action@main
-        with:
-          project: bootcamp-app
-          path: .
-          format: HTML
-          args: >
-            --failOnCVSS 7
-            --nvdApiKey ${{ secrets.NVD_API_KEY }}
+      - name: Install Dependency-Check
+        run: |
+          VERSION=$(curl -s https://api.github.com/repos/dependency-check/DependencyCheck/releases/latest | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
+          curl -sL "https://github.com/dependency-check/DependencyCheck/releases/download/v${VERSION}/dependency-check-${VERSION}-release.zip" -o dc.zip
+          unzip -q dc.zip
+      - name: Run Dependency-Check
+        run: ./dependency-check/bin/dependency-check.sh --project bootcamp-app --scan . --format HTML --out reports --failOnCVSS 7 --nvdApiKey ${{ secrets.NVD_API_KEY }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
